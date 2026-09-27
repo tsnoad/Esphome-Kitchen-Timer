@@ -3,22 +3,155 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ESPhome-Kitchen-Timer — Install Firmware</title>
+<title>ESPHome Kitchen Timer — Install Firmware</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root {
+  /* ============================================================
+     THEME — uncomment exactly ONE :root block below, comment the
+     rest out. Each block is fully self-contained (no mixing).
+     ============================================================ */
+
+  /* ---- 1. DARK — Amber (active by default) ---- */
+  /* :root {
     --bg: #0b0e13;
     --panel: #12161d;
-    --terminal-bg: #0d1117;
     --border: #232935;
     --text: #e6e9ef;
     --text-muted: #7b8494;
+    --terminal-bg: #0d1117;
+    --terminal-border: #232935;
+    --terminal-text: #e6e9ef;
+    --terminal-text-muted: #7b8494;
     --accent: #f5a623;
     --accent-dim: #7a5417;
+    --accent-tint: rgba(245, 166, 35, 0.12);
+    --accent-ink: #1a1200;
     --ok: #34d399;
     --err: #f87171;
+    --radius: 10px;
+  } */
+
+  /* ---- 2. DARK — Teal ---- */
+  /* :root {
+    --bg: #0a1412;
+    --panel: #0f1c19;
+    --border: #1e332e;
+    --text: #e3f2ee;
+    --text-muted: #7fa89d;
+    --terminal-bg: #0a1a17;
+    --terminal-border: #1e332e;
+    --terminal-text: #e3f2ee;
+    --terminal-text-muted: #7fa89d;
+    --accent: #2dd4bf;
+    --accent-dim: #14544c;
+    --accent-tint: rgba(45, 212, 191, 0.12);
+    --accent-ink: #04211d;
+    --ok: #4ade80;
+    --err: #f87171;
+    --radius: 10px;
+  } */
+
+
+  /* ---- 3. DARK — Sky Blue ---- */
+  /* :root {
+    --bg: #0a0f16;
+    --panel: #10171f;
+    --border: #202b38;
+    --text: #e5edf5;
+    --text-muted: #7c92a8;
+    --terminal-bg: #0b131b;
+    --terminal-border: #202b38;
+    --terminal-text: #e5edf5;
+    --terminal-text-muted: #7c92a8;
+    --accent: #38bdf8;
+    --accent-dim: #175a76;
+    --accent-tint: rgba(56, 189, 248, 0.12);
+    --accent-ink: #04202c;
+    --ok: #34d399;
+    --err: #fb7185;
+    --radius: 10px;
+  } */
+
+  /* ---- 4. DARK — Violet ----
+  :root {
+    --bg: #100c16;
+    --panel: #17111f;
+    --border: #2c2237;
+    --text: #ece6f5;
+    --text-muted: #9584a8;
+    --terminal-bg: #140f1c;
+    --terminal-border: #2c2237;
+    --terminal-text: #ece6f5;
+    --terminal-text-muted: #9584a8;
+    --accent: #a78bfa;
+    --accent-dim: #4c3a80;
+    --accent-tint: rgba(167, 139, 250, 0.14);
+    --accent-ink: #1a1330;
+    --ok: #34d399;
+    --err: #fb7185;
+    --radius: 10px;
+  }
+  ---- */
+
+  /* ---- 5. DARK — Coral ---- */
+  /* :root {
+    --bg: #150e0d;
+    --panel: #1e1413;
+    --border: #35211f;
+    --text: #f5e9e7;
+    --text-muted: #ab8985;
+    --terminal-bg: #1a1110;
+    --terminal-border: #35211f;
+    --terminal-text: #f5e9e7;
+    --terminal-text-muted: #ab8985;
+    --accent: #fb7185;
+    --accent-dim: #7a2f3b;
+    --accent-tint: rgba(251, 113, 133, 0.13);
+    --accent-ink: #2c0d12;
+    --ok: #4ade80;
+    --err: #f87171;
+    --radius: 10px;
+  } */
+
+  /* ---- 6. LIGHT — Amber (console/device chrome stays dark by design) ---- */
+  /* :root {
+    --bg: #f7f5f2;
+    --panel: #ffffff;
+    --border: #e3ddd3;
+    --text: #292420;
+    --text-muted: #7a716a;
+    --terminal-bg: #171310;
+    --terminal-border: #35291d;
+    --terminal-text: #f1e9de;
+    --terminal-text-muted: #a89985;
+    --accent: #c8791a;
+    --accent-dim: #e9cfa6;
+    --accent-tint: rgba(200, 121, 26, 0.12);
+    --accent-ink: #fffaf3;
+    --ok: #15803d;
+    --err: #b91c1c;
+    --radius: 10px;
+  } */
+
+  /* ---- 7. LIGHT — Sky Blue (console/device chrome stays dark by design) ---- */
+  :root {
+    --bg: #f4f7fa;
+    --panel: #ffffff;
+    --border: #dde6ee;
+    --text: #1c2733;
+    --text-muted: #64778a;
+    --terminal-bg: #0e1620;
+    --terminal-border: #253242;
+    --terminal-text: #e8f0f7;
+    --terminal-text-muted: #93a8ba;
+    --accent: #0284c7;
+    --accent-dim: #bfe3f5;
+    --accent-tint: rgba(2, 132, 199, 0.10);
+    --accent-ink: #f5fbff;
+    --ok: #15803d;
+    --err: #b91c1c;
     --radius: 10px;
   }
 
@@ -98,13 +231,51 @@
     50% { opacity: 0.45; }
   }
 
+  .device-row {
+    margin-bottom: 16px;
+  }
+
+  .device-row label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .device-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .device-option {
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--terminal-border);
+    background: var(--terminal-bg);
+    color: var(--terminal-text-muted);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+
+  .device-option:hover { border-color: var(--accent-dim); color: var(--terminal-text); }
+
+  .device-option[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent-tint);
+    color: var(--accent);
+  }
+
   button.primary {
     width: 100%;
     padding: 12px 16px;
     border-radius: 8px;
     border: none;
     background: var(--accent);
-    color: #1a1200;
+    color: var(--accent-ink);
     font-family: inherit;
     font-size: 0.95rem;
     font-weight: 600;
@@ -132,7 +303,7 @@
 
   .console {
     background: var(--terminal-bg);
-    border: 1px solid var(--border);
+    border: 1px solid var(--terminal-border);
     border-radius: var(--radius);
     overflow: hidden;
   }
@@ -142,10 +313,10 @@
     align-items: center;
     gap: 7px;
     padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--terminal-border);
     font-family: "IBM Plex Mono", monospace;
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: var(--terminal-text-muted);
   }
 
   .console-header .dot { width: 8px; height: 8px; border-radius: 50%; }
@@ -165,14 +336,14 @@
     word-break: break-word;
   }
 
-  .console-body .line { color: var(--text); }
-  .console-body .line.dim { color: var(--text-muted); }
+  .console-body .line { color: var(--terminal-text); }
+  .console-body .line.dim { color: var(--terminal-text-muted); }
   .console-body .line.ok { color: var(--ok); }
   .console-body .line.err { color: var(--err); }
   .console-body .prompt { color: var(--accent); }
 
   .console-body::-webkit-scrollbar { width: 8px; }
-  .console-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .console-body::-webkit-scrollbar-thumb { background: var(--terminal-border); border-radius: 4px; }
 
   .unsupported {
     display: none;
@@ -203,18 +374,26 @@
       <path d="M13 9V5M21 9V5M13 29V25M21 29V25M9 13H5M9 21H5M29 13H25M29 21H25" stroke="#f5a623" stroke-width="2" stroke-linecap="round"/>
       <circle cx="17" cy="17" r="2.5" fill="#f5a623"/>
     </svg>
-    <h1>ESPhome Kitchen Timer</h1>
+    <h1>ESPHome Kitchen Timer</h1>
   </header>
   <p class="subtitle">
     Connect the device over USB and install the latest firmware directly from
-    your browser. No software to download — just Chrome, Edge, or another
-    browser with Web Serial support.
+    your browser. Leave Device on "Auto-detect" and it'll figure out your
+    board, or pick one manually if you know exactly which you're flashing.
+    No software to download — just Chrome, Edge, or another browser with Web
+    Serial support.
   </p>
 
   <div class="panel">
     <div class="status-row">
       <span class="status-dot" id="statusDot"></span>
       <span id="statusText">Not connected</span>
+    </div>
+    <div class="device-row">
+      <label>Device</label>
+      <div class="device-options" id="deviceOptions" role="group" aria-label="Device selection">
+        <button type="button" class="device-option" data-value="auto" aria-pressed="true">Auto-detect</button>
+      </div>
     </div>
     <button class="primary" id="flashBtn">Connect device</button>
     <div class="progress-wrap" id="progressWrap" style="display:none;">
@@ -238,11 +417,15 @@
 
   <footer>
     Firmware built automatically from
-    <a href="https://github.com/tsnoad/Esphome-Kitchen-Timer" target="_blank" rel="noopener">this repository</a>.
+    <a href="https://github.com/OWNER/REPO" target="_blank" rel="noopener">this repository</a>.
   </footer>
 </div>
 
 <script type="module">
+  // Note: esm.sh (and similar transpiling CDNs) can corrupt esptool-js's
+  // embedded base64 stub data, causing an atob() error when uploading the
+  // stub. unpkg serves the package's own prebuilt bundle unmodified, so use
+  // that instead. See: https://github.com/espressif/esptool-js/issues/242
   import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.6.1/bundle.js";
 
   // ---- Configuration ----------------------------------------------------
@@ -251,7 +434,6 @@
   // a path relative to this page, or a GitHub Releases asset URL like:
   // https://github.com/OWNER/REPO/releases/latest/download/manifest.json
   const MANIFEST_URL = "firmware/kitchen-timer.manifest.json";
-  const CHIP_FAMILY = "ESP32-C3";
   // ------------------------------------------------------------------------
 
   const flashBtn = document.getElementById("flashBtn");
@@ -261,12 +443,45 @@
   const progressWrap = document.getElementById("progressWrap");
   const progressBar = document.getElementById("progressBar");
   const unsupportedNotice = document.getElementById("unsupportedNotice");
+  const deviceOptions = document.getElementById("deviceOptions");
+  let selectedFamily = "auto";
+
+  deviceOptions.addEventListener("click", (e) => {
+    const btn = e.target.closest(".device-option");
+    if (!btn) return;
+    selectedFamily = btn.dataset.value;
+    for (const el of deviceOptions.querySelectorAll(".device-option")) {
+      el.setAttribute("aria-pressed", String(el === btn));
+    }
+  });
 
   if (!("serial" in navigator)) {
     unsupportedNotice.style.display = "block";
     flashBtn.disabled = true;
     flashBtn.textContent = "Web Serial unavailable";
   }
+
+  // Populate the device dropdown from whatever chip families the manifest
+  // actually offers, so this page doesn't need editing per project. Falls
+  // back to just "Auto-detect" if the manifest can't be reached yet — the
+  // flash flow re-fetches it anyway when the button is clicked.
+  let manifestCache = null;
+  (async () => {
+    try {
+      manifestCache = await fetchManifest();
+      for (const build of manifestCache.builds) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "device-option";
+        btn.dataset.value = build.chipFamily;
+        btn.setAttribute("aria-pressed", "false");
+        btn.textContent = build.chipFamily;
+        deviceOptions.appendChild(btn);
+      }
+    } catch (err) {
+      console.warn("Could not preload manifest for device list:", err);
+    }
+  })();
 
   function log(text, cls) {
     const line = document.createElement("div");
@@ -320,9 +535,31 @@
       log(`connected: ${chipName}`, "ok");
 
       log("fetching manifest.json…");
-      const manifest = await fetchManifest();
-      const build = manifest.builds.find((b) => b.chipFamily === CHIP_FAMILY);
-      if (!build) throw new Error(`No build for ${CHIP_FAMILY} in manifest`);
+      const manifest = manifestCache || (manifestCache = await fetchManifest());
+
+      const selection = selectedFamily;
+      let targetFamily = selection;
+      if (selection === "auto") {
+        // esptool-js reports a full chip name like "ESP32-C3 (QFN32)"; the
+        // manifest keys builds by the plain family name, so match on prefix.
+        const match = manifest.builds.find((b) => chipName.startsWith(b.chipFamily));
+        if (!match) {
+          throw new Error(
+            `Detected ${chipName}, but the manifest has no matching build. ` +
+            `Pick one manually from the Device dropdown instead.`
+          );
+        }
+        targetFamily = match.chipFamily;
+        log(`auto-detected build: ${targetFamily}`, "ok");
+      } else if (!chipName.startsWith(selection)) {
+        // Manual override that disagrees with the connected hardware. Don't
+        // block — the user may know something esptool's naming doesn't
+        // capture — but make the mismatch impossible to miss.
+        log(`warning: connected device reports "${chipName}", not "${selection}" — flashing "${selection}" anyway`, "err");
+      }
+
+      const build = manifest.builds.find((b) => b.chipFamily === targetFamily);
+      if (!build) throw new Error(`No build for ${targetFamily} in manifest`);
 
       log(`downloading ${build.parts.length} firmware part(s)…`);
       const fileArray = [];
