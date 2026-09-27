@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Oven Temperature Probe — Install Firmware</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0b0e13;
+    --panel: #12161d;
+    --terminal-bg: #0d1117;
+    --border: #232935;
+    --text: #e6e9ef;
+    --text-muted: #7b8494;
+    --accent: #f5a623;
+    --accent-dim: #7a5417;
+    --ok: #34d399;
+    --err: #f87171;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+
+  header svg { flex-shrink: 0; }
+
+  h1 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    margin: 6px 0 32px;
+    line-height: 1.5;
+    max-width: 52ch;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 16px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .status-dot.connecting { background: var(--accent); box-shadow: 0 0 0 3px rgba(245,166,35,0.18); animation: pulse 1.1s ease-in-out infinite; }
+  .status-dot.ok { background: var(--ok); box-shadow: 0 0 0 3px rgba(52,211,153,0.18); }
+  .status-dot.err { background: var(--err); box-shadow: 0 0 0 3px rgba(248,113,113,0.18); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+
+  button.primary {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: #1a1200;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+
+  button.primary:hover:not(:disabled) { filter: brightness(1.08); }
+  button.primary:disabled { background: var(--accent-dim); color: rgba(255,255,255,0.4); cursor: not-allowed; }
+
+  .progress-wrap {
+    margin-top: 14px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.06);
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    transition: width 0.2s ease;
+  }
+
+  .console {
+    background: var(--terminal-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .console-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .console-header .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .console-header .dot:nth-child(1) { background: #4b5263; }
+  .console-header .dot:nth-child(2) { background: #4b5263; }
+  .console-header .dot:nth-child(3) { background: #4b5263; }
+  .console-header span.label { margin-left: 6px; }
+
+  .console-body {
+    height: 280px;
+    overflow-y: auto;
+    padding: 14px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .console-body .line { color: var(--text); }
+  .console-body .line.dim { color: var(--text-muted); }
+  .console-body .line.ok { color: var(--ok); }
+  .console-body .line.err { color: var(--err); }
+  .console-body .prompt { color: var(--accent); }
+
+  .console-body::-webkit-scrollbar { width: 8px; }
+  .console-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .unsupported {
+    display: none;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-top: 16px;
+  }
+
+  footer {
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  footer a { color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="9" y="9" width="16" height="16" rx="3" stroke="#f5a623" stroke-width="2"/>
+      <path d="M13 9V5M21 9V5M13 29V25M21 29V25M9 13H5M9 21H5M29 13H25M29 21H25" stroke="#f5a623" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="17" cy="17" r="2.5" fill="#f5a623"/>
+    </svg>
+    <h1>Oven Temperature Probe</h1>
+  </header>
+  <p class="subtitle">
+    Connect the device over USB and install the latest firmware directly from
+    your browser. No software to download — just Chrome, Edge, or another
+    browser with Web Serial support.
+  </p>
+
+  <div class="panel">
+    <div class="status-row">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Not connected</span>
+    </div>
+    <button class="primary" id="flashBtn">Connect device</button>
+    <div class="progress-wrap" id="progressWrap" style="display:none;">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+
+  <div class="console">
+    <div class="console-header">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="label">console</span>
+    </div>
+    <div class="console-body" id="consoleBody"></div>
+  </div>
+
+  <div class="unsupported" id="unsupportedNotice">
+    Your browser doesn't support Web Serial, which this installer needs to
+    talk to the device over USB. Open this page in a recent version of
+    Chrome or Edge instead.
+  </div>
+
+  <footer>
+    Firmware built automatically from
+    <a href="https://github.com/tsnoad/Oven-Temperature-Probe" target="_blank" rel="noopener">this repository</a>.
+  </footer>
+</div>
+
+<script type="module">
+  import { ESPLoader, Transport } from "https://esm.sh/esptool-js@0.6.1";
+
+  // ---- Configuration ----------------------------------------------------
+  // Point this at the manifest.json your build workflow publishes.
+  // Check your current static/index.md for the exact URL it used, e.g.
+  // a path relative to this page, or a GitHub Releases asset URL like:
+  // https://github.com/OWNER/REPO/releases/latest/download/manifest.json
+  const MANIFEST_URL = "firmware/oven-temperature-probe.manifest.json";
+  const CHIP_FAMILY = "ESP32-C3";
+  // ------------------------------------------------------------------------
+
+  const flashBtn = document.getElementById("flashBtn");
+  const statusDot = document.getElementById("statusDot");
+  const statusText = document.getElementById("statusText");
+  const consoleBody = document.getElementById("consoleBody");
+  const progressWrap = document.getElementById("progressWrap");
+  const progressBar = document.getElementById("progressBar");
+  const unsupportedNotice = document.getElementById("unsupportedNotice");
+
+  if (!("serial" in navigator)) {
+    unsupportedNotice.style.display = "block";
+    flashBtn.disabled = true;
+    flashBtn.textContent = "Web Serial unavailable";
+  }
+
+  function log(text, cls) {
+    const line = document.createElement("div");
+    line.className = "line" + (cls ? " " + cls : "");
+    line.textContent = text;
+    consoleBody.appendChild(line);
+    consoleBody.scrollTop = consoleBody.scrollHeight;
+  }
+
+  function setStatus(text, state) {
+    statusText.textContent = text;
+    statusDot.className = "status-dot" + (state ? " " + state : "");
+  }
+
+  const terminal = {
+    clean() { consoleBody.innerHTML = ""; },
+    writeLine(data) { log(data); },
+    write(data) { log(data); },
+  };
+
+  async function fetchManifest() {
+    const res = await fetch(MANIFEST_URL);
+    if (!res.ok) throw new Error(`Could not load manifest.json (${res.status})`);
+    return res.json();
+  }
+
+  async function fetchBinary(path) {
+    const url = new URL(path, new URL(MANIFEST_URL, window.location.href));
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Could not download ${path} (${res.status})`);
+    return new Uint8Array(await res.arrayBuffer());
+  }
+
+  flashBtn.addEventListener("click", async () => {
+    flashBtn.disabled = true;
+    consoleBody.innerHTML = "";
+    progressWrap.style.display = "block";
+    progressBar.style.width = "0%";
+
+    let transport;
+    try {
+      setStatus("Choose a device…", "connecting");
+      log("$ waiting for you to select a serial port", "prompt");
+      const port = await navigator.serial.requestPort();
+      transport = new Transport(port, true);
+
+      setStatus("Connecting…", "connecting");
+      const loader = new ESPLoader({ transport, baudrate: 115200, terminal });
+
+      const chipName = await loader.main();
+      log(`connected: ${chipName}`, "ok");
+
+      log("fetching manifest.json…");
+      const manifest = await fetchManifest();
+      const build = manifest.builds.find((b) => b.chipFamily === CHIP_FAMILY);
+      if (!build) throw new Error(`No build for ${CHIP_FAMILY} in manifest`);
+
+      log(`downloading ${build.parts.length} firmware part(s)…`);
+      const fileArray = [];
+      for (const part of build.parts) {
+        log(`  - ${part.path} @ 0x${part.offset.toString(16)}`, "dim");
+        const data = await fetchBinary(part.path);
+        fileArray.push({ data, address: part.offset });
+      }
+
+      setStatus("Flashing…", "connecting");
+      log("writing firmware — keep the device connected");
+      await loader.writeFlash({
+        fileArray,
+        flashMode: "keep",
+        flashFreq: "keep",
+        flashSize: "keep",
+        eraseAll: false,
+        compress: true,
+        reportProgress: (fileIndex, written, total) => {
+          const pct = Math.round((written / total) * 100);
+          progressBar.style.width = pct + "%";
+        },
+      });
+
+      log("resetting device…");
+      await loader.after("hard_reset");
+
+      setStatus(`Done — ${manifest.name} ${manifest.version || ""}`.trim(), "ok");
+      log("flash complete", "ok");
+    } catch (err) {
+      console.error(err);
+      setStatus("Failed — see console", "err");
+      log(String(err.message || err), "err");
+    } finally {
+      try { await transport?.disconnect(); } catch {}
+      flashBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
