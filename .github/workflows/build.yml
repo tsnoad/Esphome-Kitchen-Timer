@@ -29,6 +29,6 @@ jobs:
       # Every *.factory.yaml in the repo is discovered automatically; the
       # builds are combined into a single manifest published under this name.
       # Remove combined-name to publish one manifest per file instead.
-      combined-name: project-template
+      combined-name: kitchen-timer
       esphome-version: 2026.8.1
       #### Modify above here to match your project ####

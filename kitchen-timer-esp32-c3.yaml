@@ -1,0 +1,316 @@
+esphome:
+  name: kitchen-timer
+  friendly_name: Kitchen Timer
+  # Automatically add the mac address to the name
+  # so you can use a single firmware for all devices
+  name_add_mac_suffix: true
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+# To be able to get logs from the device via serial and api.
+logger:
+
+# API is a requirement of the dashboard import.
+api:
+
+# OTA is required for Over-the-Air updating
+ota:
+  - platform: esphome
+
+wifi:
+  # Set up a wifi access point using the device name above
+  ap:
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device.
+captive_portal:
+
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+datetime:
+  - platform: template
+    id: template_time
+    name: "Timer Time"
+    type: time
+    optimistic: true
+
+select:
+  - platform: template
+    name: "Display Row 1 Mode"
+    id: display_row1_mode
+    optimistic: true
+    options:
+      - "Blank"
+      - "Time"
+      - "Timer ETA"
+      - "Timer ETA Seconds"
+      - "Message"
+      - "Random"
+    initial_option: "Time"
+  - platform: template
+    name: "Display Row 2 Mode"
+    id: display_row2_mode
+    optimistic: true
+    options:
+      - "Blank"
+      - "Time"
+      - "Timer ETA"
+      - "Timer ETA Seconds"
+      - "Message"
+      - "Random"
+    initial_option: "Blank"
+
+switch:
+#   - platform: template
+#     id: switch_buzzer
+#     name: "Buzzer"
+#   # icon: "mdi:restart"
+#     turn_on_action:
+#       # - output.ledc.set_frequency:
+#       - output.esp8266_pwm.set_frequency:
+#           id: buzzer
+#           frequency: "1kHz"
+#       - output.set_level:
+#           id: buzzer
+#           level: "50%"
+#       - output.turn_on: buzzer
+#     turn_off_action:
+#       - output.turn_off: buzzer
+#   - platform: template
+#     id: switch_display
+#     name: "Display"
+#     optimistic: true
+  - platform: template
+    name: "Display Row 1 Flash"
+    id: display_row1_flash
+    optimistic: true
+  - platform: template
+    name: "Display Row 2 Flash"
+    id: display_row2_flash
+    optimistic: true
+
+text:
+  - platform: template
+    name: "Display Message"
+    id: display_message
+    optimistic: true
+    min_length: 0
+    max_length: 16
+    mode: text
+
+number:
+  - platform: template
+    name: "LED Brightness"
+    id: "led_brightness"
+    #mode: slider
+    optimistic: true
+    min_value: 0
+    max_value: 100
+    step: 5
+
+spi:
+  - id: spi_display_row1
+    clk_pin:
+      # number: D5
+      number: 4
+      allow_other_uses: true
+    mosi_pin:
+      # number: D7
+      number: 6
+      allow_other_uses: true
+    interface: software
+  - id: spi_display_row2
+    clk_pin:
+      # number: D5
+      number: 4
+      allow_other_uses: true
+    mosi_pin:
+      # number: D7
+      number: 6
+      allow_other_uses: true
+    interface: software
+
+display:
+  - platform: max7219
+    id: display_row1
+    spi_id: spi_display_row1
+    # cs_pin: D3
+    cs_pin: 7
+    num_chips: 1
+    update_interval: 100ms
+    lambda: |-
+      if (id(display_row1_flash).state) {
+        int flash_inteval = 600;
+        if ((millis() % flash_inteval) < (flash_inteval / 2)) {
+          it.set_intensity(round((id(led_brightness).state / 100.0) * 15.0));
+        } else {
+          it.set_intensity(0);
+        }
+      } else {
+        it.set_intensity(round((id(led_brightness).state / 100.0) * 15.0));
+      }
+
+      if (id(display_row1_mode).current_option() == "Time") {
+        it.printf(0, "t");
+        it.printf(2, "%02d.", id(homeassistant_time).now().hour);
+        it.printf(4, "%02d.", id(homeassistant_time).now().minute);
+        it.printf(6, "%02d", id(homeassistant_time).now().second);
+      }
+
+      //based on:
+      //https://community.home-assistant.io/t/esphome-ha-timer-helper-on-display/390235/6$0
+      int diff_h, diff_m, diff_s;
+      diff_h = (int) id(homeassistant_time).now().hour - id(template_time).state_as_esptime().to_c_tm().tm_hour;
+      diff_m = (int) id(homeassistant_time).now().minute - id(template_time).state_as_esptime().to_c_tm().tm_min;
+      diff_s = (int) id(homeassistant_time).now().second - id(template_time).state_as_esptime().to_c_tm().tm_sec;
+      diff_m += diff_h*60;
+      diff_s += diff_m*60;
+      
+      if (id(display_row1_mode).current_option() == "Timer ETA") {
+        int remain_h, remain_m, remain_s;
+        remain_h = (int) abs(diff_s)/3600;
+        remain_m = (int) (abs(diff_s) - 3600*remain_h)/60;
+        remain_s = (int) abs(diff_s) - 3600*remain_h - 60*remain_m; 
+  
+        //display countdown
+        it.printf(0, "t");
+        it.printf(1, (diff_s<0?"-":""));
+        it.printf(2, "%02d.", remain_h);
+        it.printf(4, "%02d.", remain_m);
+        it.printf(6, "%02d", remain_s);
+      }
+      
+      if (id(display_row1_mode).current_option() == "Timer ETA Seconds") {
+        //display countdown in seconds on top row
+        it.printf(0, "%08d", diff_s);
+      }
+      
+      if (id(display_row1_mode).current_option() == "Message") {
+        //it.printf(0, "AbCd");
+        
+        std::string full_msg = id(display_message).state;
+        
+        if (full_msg.length() <= 8) {
+          it.printf(0, full_msg.c_str());
+        } else {
+          int scroll_interval = 200;
+          int message_len = full_msg.length() + 4;
+          int message_index = floor((float)(millis() % (scroll_interval * message_len)) / scroll_interval);
+          std::string message_base = {full_msg + "    " + full_msg};
+          std::string partial_msg = message_base.substr(message_index, 8);
+          
+          it.printf(0, partial_msg.c_str());
+        }
+      }
+      
+      if (id(display_row1_mode).current_option() == "Random") {
+        it.printf(0, "%1i", (rand() % (9 + 1)));
+        it.printf(1, "%1i", (rand() % (9 + 1)));
+        it.printf(2, "%1i", (rand() % (9 + 1)));
+        it.printf(3, "%1i", (rand() % (9 + 1)));
+        it.printf(4, "%1i", (rand() % (9 + 1)));
+        it.printf(5, "%1i", (rand() % (9 + 1)));
+        it.printf(6, "%1i", (rand() % (9 + 1)));
+        it.printf(7, "%1i", (rand() % (9 + 1)));
+      }
+
+  - platform: max7219
+    id: display_row2
+    spi_id: spi_display_row2
+    # cs_pin: D6
+    cs_pin: 10
+    num_chips: 1
+    update_interval: 100ms
+    lambda: |-
+      if (id(display_row1_flash).state) {
+        int flash_inteval = 600;
+        if ((millis() % flash_inteval) < (flash_inteval / 2)) {
+          it.set_intensity(round((id(led_brightness).state / 100.0) * 15.0));
+        } else {
+          it.set_intensity(0);
+        }
+      } else {
+        it.set_intensity(round((id(led_brightness).state / 100.0) * 15.0));
+      }
+      
+      if (id(display_row2_mode).current_option() == "Time") {
+        it.printf(0, "t");
+        it.printf(2, "%02d.", id(homeassistant_time).now().hour);
+        it.printf(4, "%02d.", id(homeassistant_time).now().minute);
+        it.printf(6, "%02d", id(homeassistant_time).now().second);
+      }
+
+      //based on:
+      //https://community.home-assistant.io/t/esphome-ha-timer-helper-on-display/390235/6$0
+      int diff_h, diff_m, diff_s;
+      diff_h = (int) id(homeassistant_time).now().hour - id(template_time).state_as_esptime().to_c_tm().tm_hour;
+      diff_m = (int) id(homeassistant_time).now().minute - id(template_time).state_as_esptime().to_c_tm().tm_min;
+      diff_s = (int) id(homeassistant_time).now().second - id(template_time).state_as_esptime().to_c_tm().tm_sec;
+      diff_m += diff_h*60;
+      diff_s += diff_m*60;
+      
+      if (id(display_row2_mode).current_option() == "Timer ETA") {
+        int remain_h, remain_m, remain_s;
+        remain_h = (int) abs(diff_s)/3600;
+        remain_m = (int) (abs(diff_s) - 3600*remain_h)/60;
+        remain_s = (int) abs(diff_s) - 3600*remain_h - 60*remain_m; 
+  
+        //display countdown
+        it.printf(0, "t");
+        it.printf(1, (diff_s<0?"-":""));
+        it.printf(2, "%02d.", remain_h);
+        it.printf(4, "%02d.", remain_m);
+        it.printf(6, "%02d", remain_s);
+      }
+      
+      if (id(display_row2_mode).current_option() == "Timer ETA Seconds") {
+        //display countdown in seconds on top row
+        it.printf(0, "%08d", diff_s);
+      }
+      
+      if (id(display_row2_mode).current_option() == "Message") {
+        //it.printf(0, "AbCd");
+        
+        std::string full_msg = id(display_message).state;
+        
+        if (full_msg.length() <= 8) {
+          it.printf(0, full_msg.c_str());
+        } else {
+          int scroll_interval = 200;
+          int message_len = full_msg.length() + 4;
+          int message_index = floor((float)(millis() % (scroll_interval * message_len)) / scroll_interval);
+          std::string message_base = {full_msg + "    " + full_msg};
+          std::string partial_msg = message_base.substr(message_index, 8);
+          
+          it.printf(0, partial_msg.c_str());
+        }
+      }
+      
+      if (id(display_row2_mode).current_option() == "Random") {
+        it.printf(0, "%1i", (rand() % (9 + 1)));
+        it.printf(1, "%1i", (rand() % (9 + 1)));
+        it.printf(2, "%1i", (rand() % (9 + 1)));
+        it.printf(3, "%1i", (rand() % (9 + 1)));
+        it.printf(4, "%1i", (rand() % (9 + 1)));
+        it.printf(5, "%1i", (rand() % (9 + 1)));
+        it.printf(6, "%1i", (rand() % (9 + 1)));
+        it.printf(7, "%1i", (rand() % (9 + 1)));
+      }
+
+# output:
+#  # - platform: ledc
+#  - platform: esp8266_pwm
+#    pin: D3
+#    inverted: true
+#    id: buzzer
+   
+# switch:
+#   - platform: gpio
+#     name: "Alarm"
+#     pin: D8
