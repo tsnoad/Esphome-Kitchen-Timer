@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'static/**'
+      - 'esphome-kitchen-timer/static/**'
       - '.github/workflows/publish-pages.yml'
   workflow_run:
     workflows:
@@ -14,7 +14,7 @@ on:
       - completed
   pull_request:
     paths:
-      - 'static/**'
+      - 'esphome-kitchen-timer/static/**'
       - '.github/workflows/publish-pages.yml'
 
 permissions: {}
@@ -42,7 +42,7 @@ jobs:
       - name: Build
         uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697  # v1.0.13
         with:
-          source: ./static
+          source: ./esphome-kitchen-timer/static
           destination: ./output
 
       - name: Fetch firmware files
