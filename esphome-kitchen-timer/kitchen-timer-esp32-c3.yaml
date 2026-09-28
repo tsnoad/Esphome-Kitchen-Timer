@@ -303,6 +303,14 @@ display:
         it.printf(7, "%1i", (rand() % (9 + 1)));
       }
 
+light:
+  - platform: esp32_rmt_led_strip
+    channel_colors: GRB
+    pin: GPIO3
+    num_leds: 5
+    chipset: ws2812
+    name: "My Light"
+
 # output:
 #  # - platform: ledc
 #  - platform: esp8266_pwm
